@@ -4,9 +4,11 @@ package main
 
 func main() {
 	cards := newDeck()
-	
-	createDeckFile(cards)
-	newDeck := getNewDeck()
+	deckName := "MyDeck"
+	// createDeckFile(deckName)
+	cards.shuffle()
+	createDeckFile(deckName, cards)
+	newDeck := getNewDeck(deckName)
 	newDeck.print()
 	
 	// hand, remainingCards := deal(cards, 5)
@@ -16,9 +18,9 @@ func main() {
 	// remainingCards.print()
 }
 
-func createDeckFile(d deck) {
-	d.saveToFile("MyDeck")
+func createDeckFile(name string, d deck) {
+	d.saveToFile(name)
 }
-func getNewDeck() deck {
-	return newDeckFromFile("MyDeck")
+func getNewDeck(name string) deck {
+	return newDeckFromFile(name)
 }

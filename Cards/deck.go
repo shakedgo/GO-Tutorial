@@ -5,9 +5,38 @@ import (
 	"strings"
 	"io/ioutil"
 	"os"
+	"math/rand"
 )
 
 type deck []string
+
+// Reciver = kinda like deck is a class and print is a method of that class
+func (d deck) print() {
+	for i, cards := range d {
+		fmt.Println(i, cards)
+	}
+}
+
+func (d deck) toString() string {
+	// Convert deck to a slice of string
+	sliceDeck := []string(d)
+	return strings.Join(sliceDeck, ",")
+}
+
+func (d deck) saveToFile(name string) error {
+	// WriteFlie(filename string, data []byte, perm os.FileMode) error
+	// perm 0666 is anyone can read or write to the file
+	return ioutil.WriteFile(name, []byte(d.toString()), 0666)
+}
+
+func (d deck) shuffle() deck{
+	for i := range d{
+		newPostion := rand.Intn(len(d)-1)
+		// swap one liner
+		d[i], d[newPostion] = d[newPostion], d[i]
+	}
+	return d
+ }
 
 // Create a new deck function
 func newDeck() deck {
@@ -30,24 +59,6 @@ func deal(d deck, handSize int) (deck, deck) {
 	return d[:handSize], d[handSize:]
 }
 
-// Reciver = kinda like deck is a class and print is a method of that class
-func (d deck) print() {
-	for i, cards := range d {
-		fmt.Println(i, cards)
-	}
-}
-
-func (d deck) toString() string {
-	// Convert deck to a slice of string
-	sliceDeck := []string(d)
-	return strings.Join(sliceDeck, ",")
-}
-
-func (d deck) saveToFile(name string) error {
-	// WriteFlie(filename string, data []byte, perm os.FileMode) error
-	// perm 0666 is anyone can read or write to the file
-	return ioutil.WriteFile(name, []byte(d.toString()), 0666)
-}
 func newDeckFromFile(filename string) deck {
 	bs, err := ioutil.ReadFile(filename)
 	if err != nil {

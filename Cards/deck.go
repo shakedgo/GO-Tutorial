@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"math/rand"
+	"time"
 )
 
 type deck []string
@@ -30,8 +31,15 @@ func (d deck) saveToFile(name string) error {
 }
 
 func (d deck) shuffle() deck{
+	// To create a real random number -
+	// we need to change the source value that the random starts from
+	// we give it new source with timestamp of now as a number to start from.
+	// It's like random in assembly.
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+
 	for i := range d{
-		newPostion := rand.Intn(len(d)-1)
+		newPostion := r.Intn(len(d)-1)
 		// swap one liner
 		d[i], d[newPostion] = d[newPostion], d[i]
 	}

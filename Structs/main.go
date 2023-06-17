@@ -22,14 +22,13 @@ func main() {
 		},
 	}
 	person1.lastName = "Govrin"
-	// person1.changeName("Emanuel") // Doesn't work because it's just a pointer
-	person1Pointer := &person1 //&=gets the memory location of the variable
-	person1Pointer.changeName("Emanuel")
+	// person1Pointer := &person1 //&=gets the memory location of the variable
+	// person1Pointer.changeName("Emanuel")
+	person1.changeName("Emanuel") // works because of reciver *person
 	person1.print()
-
-
 }
 
+// person1.changeName("Emanuel") // Doesn't work because it's just a pointer
 // func (p person) changeName(newName string) {
 // 	p.firstName = newName
 // }

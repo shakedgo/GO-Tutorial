@@ -10,7 +10,7 @@ func (s *stack) IsEmpty() bool {
 	return len(*s) == 0
 }
 
-func (s *stack) pop(str string) (string, bool) {
+func (s *stack) Pop() (string, bool) {
 	if s.IsEmpty() {
 		return "", false
 	}

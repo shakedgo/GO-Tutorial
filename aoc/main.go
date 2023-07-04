@@ -9,53 +9,43 @@ import (
 )
 
 func main() {
-	bs,err := buildPatternFile("pattern.txt")
+	_,err := buildPatternFile("pattern.txt")
 	if err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println(bs)
 	}
-	pt, err := ioutil.ReadFile("pattern.txt")
-	
+	pt,_ := ioutil.ReadFile("pattern.txt")
 
-	rows := strings.Split(string(pt), "\n")
-	columns := make([]string, 0)
+	cols := getCols(string(pt));
 
-	// Find the maximum row length
-	maxLength := 0
-	for _, row := range rows {
-		if len(row) > maxLength {
-			maxLength = len(row)
-		}
-	}
-
-	// Transpose the pattern
-	for i := 0; i < maxLength; i++ {
-		column := ""
-		for _, row := range rows {
-			if len(row) > i {
-				char := row[i]
-				if char != ' ' && char != '[' && char != ']' {
-					column += string(char)
-				}
+	stacks := []stack{} // slice of stacks
+	for _, column := range cols {
+		tempStack := stack{}
+		for i := len(column)-1; i >= 0; i-- {
+			if (i != len(column)-1) {
+				tempStack.Push(string(column[i]))
 			}
 		}
-		if (len(column) > 0) {
-			columns = append(columns, column)
+		stacks = append(stacks, tempStack)
+	}
+
+	acts, err := getActions()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	for _,act := range acts {
+		for i := 0; i < act.qty; i++ {
+			si,bol := stacks[act.from-1].Pop()
+			if (bol){
+				stacks[act.to-1].Push(si)
+			}
 		}
 	}
-	fmt.Println(columns)
-
-	// values := make([]string, 0)
-	// for _, column := range columns {
-	// 	values = append(values, column)
-	// }
-
-	// fmt.Println(values)
-
-	// s1 := stack{}
-	// s1.Push("s")
-	// fmt.Println(s1.getTop())
+	var tops []string
+	for _,s := range stacks {
+		tops = append(tops, s.getTop())
+	}
+	fmt.Println(tops)
 }
 
 func buildPatternFile(filename string) (string, error) {
@@ -104,4 +94,65 @@ func buildPatternFile(filename string) (string, error) {
 		}
 		return "",err
 	}
+}
+
+func getCols(pt string) []string {
+	rows := strings.Split(pt, "\n")
+	columns := make([]string, 0)
+
+	// Find the maximum row length
+	maxLength := 0
+	for _,row := range rows {
+		if len(row) > maxLength {
+			maxLength = len(row)
+		}
+	}
+
+	// Transpose the pattern
+	for i := 0; i < maxLength; i++ {
+		column := ""
+		for _,row := range rows {
+			if len(row) > i {
+				char := row[i]
+				if char != ' ' && char != '[' && char != ']' {
+					column += string(char)
+				}
+			}
+		}
+		if (len(column) > 0) {
+			columns = append(columns, column)
+		}
+	}
+	return columns
+}
+
+type action struct {
+	qty, from, to int
+}
+
+func getActions() ([]action,error) {
+	actions := []action{}
+
+	file, err := os.Open("Actions.txt")
+	if err != nil {
+		fmt.Println("Error opening the file:", err)
+		return actions, err
+	}
+	defer file.Close()
+
+	// Create a new scanner to read the file line by line
+	scanner := bufio.NewScanner(file)
+	// Read each line until the end of the file
+	for scanner.Scan() {
+		line := scanner.Text()
+		act := action{}
+		fmt.Sscanf(line, "move %d from %d to %d", &act.qty, &act.from, &act.to)
+		// fmt.Println(act)
+		empty := action{0,0,0}
+		if act != empty {
+			actions = append(actions, act)
+		}
+	}
+	// fmt.Println(actions)
+	return actions,nil
 }

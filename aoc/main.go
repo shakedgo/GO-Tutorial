@@ -18,6 +18,7 @@ func main() {
 	cols := getCols(string(pt));
 
 	stacks := []stack{} // slice of stacks
+	stacks2  := []stack{}
 	for _, column := range cols {
 		tempStack := stack{}
 		for i := len(column)-1; i >= 0; i-- {
@@ -26,26 +27,49 @@ func main() {
 			}
 		}
 		stacks = append(stacks, tempStack)
+		stacks2 = append(stacks2, tempStack)
 	}
+	
+	// stacks2.append(stacks2, stacks...)
+	// copy(stacks2, stacks)
 
 	acts, err := getActions()
 	if err != nil {
 		os.Exit(1)
 	}
 
+	fmt.Println(stacks2)
+
 	for _,act := range acts {
+		tempStack2 := stack{}
 		for i := 0; i < act.qty; i++ {
 			si,bol := stacks[act.from-1].Pop()
-			if (bol){
+			// si2,bol2 := stacks2[act.from-1].Pop()
+			if (bol ){
 				stacks[act.to-1].Push(si)
+				tempStack2.Push(si)
+
 			}
+			// if (bol2) {
+			// }
 		}
+		// for i := len(tempStack2)-1; i > 0; i-- {
+		// 	stacks2[act.to-1].Push(tempStack2[i])
+		// }
 	}
-	var tops []string
-	for _,s := range stacks {
-		tops = append(tops, s.getTop())
-	}
-	fmt.Println(tops)
+	fmt.Println(stacks2)
+	os.Exit(1)
+
+	// var tops []string
+	// var tops2 []string
+	// for _,s := range stacks {
+	// 	tops = append(tops, s.getTop())
+	// }
+	// for _,s2 := range stacks2 {
+	// 	tops2 = append(tops2, s2.getTop())
+	// }
+	// fmt.Println("Part one :", tops)
+	// fmt.Println("Part Two :", tops2)
 }
 
 func buildPatternFile(filename string) (string, error) {

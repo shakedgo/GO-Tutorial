@@ -9,16 +9,18 @@ import (
 )
 
 func main() {
-	_,err := buildPatternFile("pattern.txt")
+	err := buildPatternFile("pattern.txt")
 	if err != nil {
 		fmt.Println(err)
 	}
-	pt,_ := ioutil.ReadFile("pattern.txt")
-
+	pt, err := ioutil.ReadFile("pattern.txt")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	cols := getCols(string(pt));
 
 	stacks := []stack{} // slice of stacks
-	stacks2  := []stack{}
 	for _, column := range cols {
 		tempStack := stack{}
 		for i := len(column)-1; i >= 0; i-- {
@@ -27,61 +29,35 @@ func main() {
 			}
 		}
 		stacks = append(stacks, tempStack)
-		stacks2 = append(stacks2, tempStack)
 	}
 	
-	// stacks2.append(stacks2, stacks...)
-	// copy(stacks2, stacks)
+	stacks2 := make([]stack, len(stacks))
+	copy(stacks2, stacks)
 
 	acts, err := getActions()
 	if err != nil {
 		os.Exit(1)
 	}
+	
+	applyActions(stacks, stacks2, acts)
+	
+	tops := getAllTopValues(stacks)
+	tops2 := getAllTopValues(stacks2)
 
-	fmt.Println(stacks2)
-
-	for _,act := range acts {
-		tempStack2 := stack{}
-		for i := 0; i < act.qty; i++ {
-			si,bol := stacks[act.from-1].Pop()
-			// si2,bol2 := stacks2[act.from-1].Pop()
-			if (bol ){
-				stacks[act.to-1].Push(si)
-				tempStack2.Push(si)
-
-			}
-			// if (bol2) {
-			// }
-		}
-		// for i := len(tempStack2)-1; i > 0; i-- {
-		// 	stacks2[act.to-1].Push(tempStack2[i])
-		// }
-	}
-	fmt.Println(stacks2)
-	os.Exit(1)
-
-	// var tops []string
-	// var tops2 []string
-	// for _,s := range stacks {
-	// 	tops = append(tops, s.getTop())
-	// }
-	// for _,s2 := range stacks2 {
-	// 	tops2 = append(tops2, s2.getTop())
-	// }
-	// fmt.Println("Part one :", tops)
-	// fmt.Println("Part Two :", tops2)
+	fmt.Println("Part one :", tops)
+	fmt.Println("Part Two :", tops2)
 }
 
-func buildPatternFile(filename string) (string, error) {
+func buildPatternFile(filename string) (error) {
 	_, err := ioutil.ReadFile(filename)
 	if err == nil {
-		return "file already exists", err
-		
+		fmt.Println("file already exists")
+		return err
 	} else {
 		file, err := os.Open("Actions.txt")
 		if err != nil {
 			fmt.Println("Error opening the file:", err)
-			return "",err
+			return err
 		}
 		defer file.Close()
 
@@ -103,20 +79,20 @@ func buildPatternFile(filename string) (string, error) {
 					}
 				} else {
 					fmt.Println("Error reading file:", err)
-					return "",err
+					return err
 				}
 			}
 			if len(line) != 0 {
 				ioutil.WriteFile(filename, []byte(string(bs)+line+string("\n")), 0666)
 			} else {
-				return "done",nil
+				return nil
 			}
 		}
 		// Check for any errors during scanning
 		if err := scanner.Err(); err != nil {
 			fmt.Println("Error reading the file:", err)
 		}
-		return "",err
+		return err
 	}
 }
 
@@ -179,4 +155,29 @@ func getActions() ([]action,error) {
 	}
 	// fmt.Println(actions)
 	return actions,nil
+}
+
+func applyActions(stacks, stacks2 []stack, acts []action) {
+	for _, act := range acts {
+		tempStack2 := stack{}
+		for i := 0; i < act.qty; i++ {
+			si, bol := stacks[act.from-1].Pop()
+			si2, _ := stacks2[act.from-1].Pop()
+			if bol {
+				stacks[act.to-1].Push(si)
+				tempStack2.Push(si2)
+			}
+		}
+		for i := len(tempStack2) - 1; i >= 0; i-- {
+			stacks2[act.to-1].Push(tempStack2[i])
+		}
+	}
+}
+
+func getAllTopValues(stacks []stack) []string {
+	var tops []string
+	for _, s := range stacks {
+		tops = append(tops, s.getTop())
+	}
+	return tops
 }

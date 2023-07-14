@@ -20,18 +20,19 @@ func main() {
 		fmt.Println("Error reading file:", err)
 		return
 	}
-	// content := string(byteCont)
 
-	for i, _ := range byteCont {
-		if i > 3 {
-			if isUnique([]byte{byteCont[i], byteCont[i+1], byteCont[i+2], byteCont[i+3]}) {
-				fmt.Println(string(byteCont[i]), string(byteCont[i+1]), string(byteCont[i+2]), string(byteCont[i+3]))
-				fmt.Println(i + 4)
-				break
-			}
+	for i := 3; i < len(byteCont); i++ {
+		if isUnique(byteCont[i-3 : i+1]) {
+			fmt.Println("Part 1:", i+1)
+			break
 		}
 	}
-
+	for i := 13; i < len(byteCont); i++ {
+		if isUnique(byteCont[i-13 : i+1]) {
+			fmt.Println("Part 2:", i+1)
+			break
+		}
+	}
 }
 
 func isUnique(check []byte) bool {

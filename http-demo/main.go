@@ -1,36 +1,75 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-
-	id := req.PathValue("id")
-	fmt.Fprintf(w, "hello %s\n", id)
-	// fmt.Fprintf(w, "Hello \n")
-	fmt.Println(req.Method + " " + req.RequestURI)
-	fmt.Println("Client got hello")
+type album struct {
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Artist   string `json:"artist"`
+	Year     int    `json:"year"`
+	Duration int    `json:"duration"`
 }
 
-func headers(w http.ResponseWriter, req *http.Request) {
-
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
+var albums = []album{
+	{
+		ID:       "1",
+		Title:    "Thriller",
+		Artist:   "Michael Jackson",
+		Year:     1982,
+		Duration: 42,
+	},
+	{
+		ID:       "2",
+		Title:    "Back in Black",
+		Artist:   "AC/DC",
+		Year:     1980,
+		Duration: 42,
+	},
+	{
+		ID:       "3",
+		Title:    "Revolver",
+		Artist:   "The Beatles",
+		Year:     1966,
+		Duration: 42,
+	},
 }
 
 func main() {
+	router := gin.Default()
+	router.GET("/albums", getAlbums)
+	router.GET("/albums/:id", getAlbumByID)
+	router.POST("/albums", postAlbums)
 
-	mux := http.NewServeMux()
+	router.Run("localhost:8080")
+}
 
-	fmt.Println("Starting HTTP server")
-	mux.HandleFunc("/hello/{id}", hello) // FIX
-	mux.HandleFunc("/headers", headers)
+func getAlbums(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, albums)
+}
 
-	fmt.Println("Server started at http://localhost:8091")
-	http.ListenAndServe(":8091", mux)
+func getAlbumByID(c *gin.Context) {
+	id := c.Param("id")
+
+	for _, a := range albums {
+		if a.ID == id {
+			c.IndentedJSON(http.StatusOK, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+}
+
+func postAlbums(c *gin.Context) {
+	var newAlbum album
+
+	if err := c.BindJSON(&newAlbum); err != nil {
+		return
+	}
+
+	albums = append(albums, newAlbum)
+	c.IndentedJSON(http.StatusCreated, newAlbum)
 }
